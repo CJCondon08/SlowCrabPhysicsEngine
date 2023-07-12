@@ -24,7 +24,8 @@ fn main() {
         
         for i in 0..object_list.len() {
             object_list[i].gravity(delta_timer);
-            object_list[i].is_colliding(object_list.as_ref(), i);
+            let mut temp = object_list[i];
+            temp.is_colliding(&object_list, i);
             object_list[i].drag(&mut window, delta_timer);
 
         }

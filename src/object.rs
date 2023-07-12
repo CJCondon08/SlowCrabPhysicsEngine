@@ -1,5 +1,6 @@
 use minifb::Window;
 
+#[derive (Copy, Clone)]
 pub struct Object {
     pub x: i16,
     pub y: i16,
@@ -51,6 +52,7 @@ impl Object {
         //self.acceleration.1 += object2.acceleration.1*object2.mass;
         //object2.acceleration.0 += self.acceleration.0*self.mass;
         //object2.acceleration.0 += self.acceleration.0*self.mass;
+        println!("collision");
     }
 
     pub fn is_colliding(&mut self, objects_list: &Vec<Object>, index: usize) -> bool{
