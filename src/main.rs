@@ -21,13 +21,12 @@ fn main() {
     while window.is_open() && !window.is_key_down(Key::Escape) {
         let loop_time: Instant = Instant::now();
 
-        
         for i in 0..object_list.len() {
             object_list[i].gravity(delta_timer);
-            let mut temp = object_list[i];
-            temp.is_colliding(&object_list, i);
             object_list[i].drag(&mut window, delta_timer);
-
+            let mut temp = object_list[i];
+            temp.is_colliding(&mut object_list, i);
+            object_list[i].boundries(&mut window);
         }
 
         if window.is_key_pressed(Key::S, minifb::KeyRepeat::No) {
@@ -45,7 +44,7 @@ fn main() {
             for y in object_list[z].y ..(object_list[z].y + square_size as i16) {
                 for x in object_list[z].x ..(object_list[z].x + square_size as i16) {
                     let index: usize = x as usize + (width * y as usize);
-                    buffer[index] = from_u8_rgb(40, 80, 200);
+                    buffer[index] = from_u8_rgb(40*(z as u8), 80, 200);
                 }
             }
         }
