@@ -22,9 +22,8 @@ impl Object {
 
     pub fn gravity(&mut self, delta_timer: f32) {
         //change to collision detection
-        if self.y >= 540 || !self.rigid{
-            self.acceleration.1 = 0.0;
-            self.acceleration.0 = 0.0; 
+        if self.y >= 540 || self.rigid == false{
+            self.acceleration = (0.0, 0.0);
             println!("not rigid");
             return;
         }
@@ -55,14 +54,14 @@ impl Object {
     }
 
     pub fn collision_effects(&mut self, object2: &mut Object){
-        self.acceleration.0 = object2.acceleration.0*object2.mass;
-        self.acceleration.1 = object2.acceleration.1*object2.mass;
-        object2.acceleration.0 = self.acceleration.0*self.mass;
-        object2.acceleration.1 = self.acceleration.1*self.mass;
+        self.acceleration.0 += object2.acceleration.0*object2.mass;
+        self.acceleration.1 += object2.acceleration.1*object2.mass;
+        object2.acceleration.0 += (self.acceleration.0 - object2.acceleration.0*object2.mass)*self.mass;
+        object2.acceleration.1 += (self.acceleration.1 - object2.acceleration.1*object2.mass)*self.mass;
         //object2.x += object2.size;
         //self.rigid = false;
         //object2.rigid = false;
-        //println!("collision!");
+        println!("collision!");
     }
 
     pub fn is_colliding(&mut self, objects_list: &[Object], index: usize) {
