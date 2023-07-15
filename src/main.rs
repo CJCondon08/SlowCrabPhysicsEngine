@@ -27,7 +27,6 @@ fn main() {
             let mut temp = object_list[i];
             temp.is_colliding(&mut object_list, i);
             object_list[i] = temp;
-            drop(temp);
             object_list[i].boundries(&mut window);
         }
 
@@ -57,6 +56,6 @@ fn main() {
         delta_timer = loop_time.elapsed().as_secs_f32();
         drop(loop_time);
 
-        //println!("{}", 1.0/delta_timer);
+        println!("{}", 1.0/delta_timer);
     }
 }

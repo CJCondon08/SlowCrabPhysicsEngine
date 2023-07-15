@@ -24,11 +24,8 @@ impl Object {
         //change to collision detection
         if self.y >= 540 || self.rigid == false{
             self.acceleration = (0.0, 0.0);
-            println!("not rigid");
             return;
         }
-
-        println!("rigid");
 
         let g: f32 = -9.8*3.0;
         self.acceleration.1 -= g*delta_timer;  
@@ -54,14 +51,21 @@ impl Object {
     }
 
     pub fn collision_effects(&mut self, object2: &mut Object){
-        self.acceleration.0 += object2.acceleration.0*object2.mass;
-        self.acceleration.1 += object2.acceleration.1*object2.mass;
-        object2.acceleration.0 += (self.acceleration.0 - object2.acceleration.0*object2.mass)*self.mass;
-        object2.acceleration.1 += (self.acceleration.1 - object2.acceleration.1*object2.mass)*self.mass;
-        //object2.x += object2.size;
-        //self.rigid = false;
-        //object2.rigid = false;
-        println!("collision!");
+        let mut pre_momentum = self.acceleration.0*self.mass + object2.acceleration.0*object2.mass;
+        let v2_final = self.acceleration.0 - object2.acceleration.0;
+        pre_momentum -= v2_final;
+        self.acceleration.0 = pre_momentum/(self.mass+object2.mass);
+        object2.acceleration.0 = self.acceleration.0 + v2_final;
+
+        drop(pre_momentum);
+        drop(v2_final);
+
+        let mut pre_momentum = self.acceleration.1*self.mass + object2.acceleration.1*object2.mass;
+        let v2_final = self.acceleration.1 - object2.acceleration.1;
+        pre_momentum -= v2_final;
+        self.acceleration.1 = pre_momentum/(self.mass+object2.mass);
+        object2.acceleration.1 = self.acceleration.1 + v2_final;
+
     }
 
     pub fn is_colliding(&mut self, objects_list: &[Object], index: usize) {
@@ -69,22 +73,27 @@ impl Object {
             return;
         }
     
-        let other_objects = &objects_list[index + 1..];
+        let other_objects = &objects_list[0..];
         for object in other_objects {
-            let self_left = self.x - self.size / 2;
-            let self_right = self.x + self.size / 2;
-            let self_top = self.y - self.size / 2;
-            let self_bottom = self.y + self.size / 2;
-    
-            let other_left = object.x - object.size / 2;
-            let other_right = object.x + object.size / 2;
-            let other_top = object.y - object.size / 2;
-            let other_bottom = object.y + object.size / 2;
-    
-            if self_left <= other_right && self_right >= other_left &&
-               self_top <= other_bottom && self_bottom >= other_top {
-                self.collision_effects(&mut object.clone());
+
+            if object.acceleration != self.acceleration{
+                let self_left = self.x - self.size / 2;
+                let self_right = self.x + self.size / 2;
+                let self_top = self.y - self.size / 2;
+                let self_bottom = self.y + self.size / 2;
+        
+                let other_left = object.x - object.size / 2;
+                let other_right = object.x + object.size / 2;
+                let other_top = object.y - object.size / 2;
+                let other_bottom = object.y + object.size / 2;
+        
+                if self_left <= other_right && self_right >= other_left &&
+                   self_top <= other_bottom && self_bottom >= other_top {
+                    self.collision_effects(&mut object.clone());
+                }
             }
+
+
         }
     }
     
