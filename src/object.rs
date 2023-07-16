@@ -51,6 +51,15 @@ impl Object {
     }
 
     pub fn collision_effects(&mut self, object2: &mut Object){
+        let x_diff = self.x - object2.x;
+        let y_diff = self.y - object2.y;
+        let separation_dist = (self.size - object2.size) / 2;
+
+        self.x += x_diff/100;
+        object2.x -= x_diff/100;
+        self.y += y_diff/100;
+        object2.y -= y_diff/100;
+
         let mut pre_momentum = self.acceleration.0*self.mass + object2.acceleration.0*object2.mass;
         let v2_final = self.acceleration.0 - object2.acceleration.0;
         pre_momentum -= v2_final;
@@ -74,9 +83,10 @@ impl Object {
         }
     
         let other_objects = &objects_list[0..];
+        let mut i = 0;
         for object in other_objects {
 
-            if object.acceleration != self.acceleration{
+            if i != index {
                 let self_left = self.x - self.size / 2;
                 let self_right = self.x + self.size / 2;
                 let self_top = self.y - self.size / 2;
@@ -93,6 +103,7 @@ impl Object {
                 }
             }
 
+            i += 1;
 
         }
     }
