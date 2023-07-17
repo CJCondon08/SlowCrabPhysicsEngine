@@ -110,17 +110,17 @@ impl Object {
     
     pub fn boundries(&mut self, window: &mut Window){
         
-        if self.x <= 5 {
-            self.x = 10;
+        if self.x <= 0 {
+            self.x = 0;
             self.acceleration.0 = 0.0;
 
-        } else if self.x >= self.size + window.get_size().0 as i16 - 270{
-            self.x = self.size + window.get_size().1 as i16 - 10;
+        } else if self.x >= self.size + window.get_size().0 as i16 - 300{
+            self.x = self.size + window.get_size().0 as i16 - 300;
             self.acceleration.0 = 0.0;
         }
 
         if self.y <= 5 {
-            self.y = 10;
+            self.y = 6;
             self.acceleration.1 = 0.0;
 
         } else if self.y >= window.get_size().1 as i16 - self.size{
