@@ -22,22 +22,40 @@ impl Object {
 
     pub fn gravity(&mut self, delta_timer: f32) {
         //change to collision detection
-        if self.y >= 540 || self.rigid == false{
-            self.acceleration = (0.0, 0.0);
+        if self.rigid == false {
             return;
+        }
+        
+        if self.y >= 540 {
+            self.acceleration.1 = 0.0;
         }
 
         let g: f32 = -9.8*3.0;
         self.acceleration.1 -= g*delta_timer;  
         self.y += self.acceleration.1.floor() as i16;
 
+        let mut air_resistance:f32 = 5.0;
+
+        if self.acceleration.0 > 0.0 {
+            air_resistance = -5.0;
+
+            if self.acceleration.0 <= 0.1 {
+                self.acceleration.0 = 0.0;
+            }
+        } else if self.acceleration.0 <= 0.0{
+            air_resistance = 5.0;
+            if self.acceleration.0 >= -0.1 {
+                self.acceleration.0 = 0.0;
+                
+            }
+        }
+
         if self.acceleration.0 == 0.0 {
             return;
         }
 
-        let air_resistance:f32 = 5.0;
         self.acceleration.0 += air_resistance*delta_timer;
-        self.x -= self.acceleration.0 as i16;
+        self.x -= self.acceleration.0.floor() as i16;
 
     }
 
@@ -51,6 +69,9 @@ impl Object {
     }
 
     pub fn collision_effects(&mut self, object2: &mut Object){
+        if self.x == object2.x && self.y == object2.y {
+            self.y -= self.size;
+        }
         let x_diff = self.x - object2.x;
         let y_diff = self.y - object2.y;
         let separation_dist = (self.size - object2.size) / 2;
