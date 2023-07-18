@@ -26,7 +26,7 @@ impl Object {
             return;
         }
         
-        if self.y >= 540 {
+        if self.y >= 700 - self.size {
             self.acceleration.1 = 0.0;
         }
 
@@ -34,16 +34,16 @@ impl Object {
         self.acceleration.1 -= g*delta_timer;  
         self.y += self.acceleration.1.floor() as i16;
 
-        let mut air_resistance:f32 = 5.0;
+        let mut friction:f32 = 5.0;
 
         if self.acceleration.0 > 0.0 {
-            air_resistance = -5.0;
+            friction = -5.0;
 
             if self.acceleration.0 <= 0.1 {
                 self.acceleration.0 = 0.0;
             }
         } else if self.acceleration.0 <= 0.0{
-            air_resistance = 5.0;
+            friction = 5.0;
             if self.acceleration.0 >= -0.1 {
                 self.acceleration.0 = 0.0;
                 
@@ -54,7 +54,11 @@ impl Object {
             return;
         }
 
-        self.acceleration.0 += air_resistance*delta_timer;
+        if self.y >= 700 - self.size {
+            friction *= self.mass*0.6;
+        }
+
+        self.acceleration.0 += friction*delta_timer;
         self.x -= self.acceleration.0.floor() as i16;
 
     }
@@ -68,22 +72,16 @@ impl Object {
         
     }
 
-    pub fn collision_effects(&mut self, object2: &mut Object){
-        if self.x == object2.x && self.y == object2.y {
-            self.y -= self.size;
-        }
-        let x_diff = self.x - object2.x;
-        let y_diff = self.y - object2.y;
-        let separation_dist = (self.size - object2.size) / 2;
+    pub fn collision_effects(&mut self, object2: &mut Object, penetration_x: i16, penetration_y: i16){
 
-        self.x += x_diff/100;
-        object2.x -= x_diff/100;
-        self.y += y_diff/100;
-        object2.y -= y_diff/100;
+        self.x -= penetration_x/self.size;
+        object2.x += penetration_x/self.size;
+        self.y -= penetration_y/self.size;
+        object2.y += penetration_y/self.size;
 
         let mut pre_momentum = self.acceleration.0*self.mass + object2.acceleration.0*object2.mass;
         let v2_final = self.acceleration.0 - object2.acceleration.0;
-        pre_momentum -= v2_final;
+        pre_momentum -= v2_final*object2.mass;
         self.acceleration.0 = pre_momentum/(self.mass+object2.mass);
         object2.acceleration.0 = self.acceleration.0 + v2_final;
 
@@ -92,21 +90,20 @@ impl Object {
 
         let mut pre_momentum = self.acceleration.1*self.mass + object2.acceleration.1*object2.mass;
         let v2_final = self.acceleration.1 - object2.acceleration.1;
-        pre_momentum -= v2_final;
+        pre_momentum -= v2_final*object2.mass;
         self.acceleration.1 = pre_momentum/(self.mass+object2.mass);
         object2.acceleration.1 = self.acceleration.1 + v2_final;
 
     }
 
-    pub fn is_colliding(&mut self, objects_list: &[Object], index: usize) {
+    pub fn is_colliding(&mut self, objects_list: &mut [Object], index: usize) {
         if objects_list.len() < 2 {
             return;
         }
     
-        let other_objects = &objects_list[0..];
         let mut i = 0;
-        for object in other_objects {
-
+        for i in 0..objects_list.len() {
+            let mut object = objects_list[i]; 
             if i != index {
                 let self_left = self.x - self.size / 2;
                 let self_right = self.x + self.size / 2;
@@ -119,12 +116,16 @@ impl Object {
                 let other_bottom = object.y + object.size / 2;
         
                 if self_left <= other_right && self_right >= other_left &&
-                   self_top <= other_bottom && self_bottom >= other_top {
-                    self.collision_effects(&mut object.clone());
+                    self_top <= other_bottom && self_bottom >= other_top {
+
+                    let overlap_x = i16::min(self_right, other_right) - i16::max(self_left, other_left);
+                    let overlap_y = i16::min(self_bottom, other_bottom) - i16::max(self_top, other_top);
+                    self.collision_effects(&mut object, overlap_x, overlap_y);
+                    objects_list[i] = object;
                 }
             }
 
-            i += 1;
+            //i += 1;
 
         }
     }
@@ -149,6 +150,7 @@ impl Object {
             self.acceleration.1 = 0.0;
         }
     }
+
     pub fn drag(&mut self, window: &mut Window, delta_timer: f32) -> (i16, i16){
 
         let mouse_x: i16 = window.get_mouse_pos(minifb::MouseMode::Clamp).unwrap().0 as i16;
