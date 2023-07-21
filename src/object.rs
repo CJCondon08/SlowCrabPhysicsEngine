@@ -20,12 +20,14 @@ impl Object {
         Object{x: 0, y: 0, prev: (0, 0), size: 150, mass: 0.0, acceleration: (0.0, 0.0), rigid: false}
     }
 
-    pub fn gravity(&mut self, delta_timer: f32) {
-        //change to collision detection
+    pub fn acceleration_controll(&mut self, delta_timer: f32) {
+
         if self.rigid == false {
             return;
         }
-    
+        
+        //gravity
+
         if self.y >= 700 - self.size {
             self.acceleration.1 *= -0.5;
         }
@@ -33,6 +35,8 @@ impl Object {
         let g: f32 = -9.8*3.0;
         self.acceleration.1 -= g*delta_timer;  
         self.y += self.acceleration.1.floor() as i16;
+
+        //friction
 
         let mut friction:f32 = 5.0;
 
@@ -93,9 +97,12 @@ impl Object {
 
     pub fn prevent_overlap(&mut self, object: &mut Object){
 
-        if self.y+self.size >= object.y && object.y >= 700 - object.size{ //&& self.x - self.size >= object.x && self.x <= object.x + object.size{
-            self.acceleration.1 *= -0.2;
-            //self.y = object.y-self.size;
+        if self.y+self.size >= object.y {//&& object.y >= 700 - object.size{ //&& self.x - self.size >= object.x && self.x <= object.x + object.size{
+            if object.y >= 700 - object.size && self.y <= object.y + (object.size/2){
+                self.acceleration.1 *= 0.4;
+                self.y -= (self.y + self.size) - object.y; 
+            }    
+            //self.y = 400;
         }
     }
 

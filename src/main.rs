@@ -23,7 +23,7 @@ fn main() {
         let loop_time: Instant = Instant::now();
 
         for i in 0..object_list.len() {
-            object_list[i].gravity(delta_timer);
+            object_list[i].acceleration_controll(delta_timer);
 
             if lock == i as i16 || lock == -1{
                 lock = object_list[i].drag(&mut window, delta_timer, i as i16);
