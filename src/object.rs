@@ -13,7 +13,7 @@ pub struct Object {
 
 impl Object {
     pub fn new_rigid() -> Object {
-        Object{x: 0, y: 200, prev: (0, 200), size: 150, mass: 5.0, acceleration: (0.0, 0.0), rigid: true}
+        Object{x: 0, y: 0, prev: (0, 0), size: 150, mass: 5.0, acceleration: (0.0, 0.0), rigid: true}
     }
 
     pub fn new_non_rigid() -> Object {
@@ -25,9 +25,9 @@ impl Object {
         if self.rigid == false {
             return;
         }
-        
+    
         if self.y >= 700 - self.size {
-            self.acceleration.1 = 0.0;
+            self.acceleration.1 *= -0.5;
         }
 
         let g: f32 = -9.8*3.0;
@@ -72,12 +72,7 @@ impl Object {
         
     }
 
-    pub fn collision_effects(&mut self, object2: &mut Object, penetration_x: i16, penetration_y: i16){
-
-        self.x -= penetration_x/self.size;
-        object2.x += penetration_x/self.size;
-        self.y -= penetration_y/self.size;
-        object2.y += penetration_y/self.size;
+    pub fn collision_effects(&mut self, object2: &mut Object){
 
         let mut pre_momentum = self.acceleration.0*self.mass + object2.acceleration.0*object2.mass;
         let v2_final = self.acceleration.0 - object2.acceleration.0;
@@ -96,12 +91,18 @@ impl Object {
 
     }
 
+    pub fn prevent_overlap(&mut self, object: &mut Object){
+
+        if self.x+self.size >= object.x && self.y >= object.y - object.size{
+            self.x = object.x + self.size + 1;
+        }
+    }
+
     pub fn is_colliding(&mut self, objects_list: &mut [Object], index: usize) {
         if objects_list.len() < 2 {
             return;
         }
-    
-        let mut i = 0;
+
         for i in 0..objects_list.len() {
             let mut object = objects_list[i]; 
             if i != index {
@@ -118,9 +119,8 @@ impl Object {
                 if self_left <= other_right && self_right >= other_left &&
                     self_top <= other_bottom && self_bottom >= other_top {
 
-                    let overlap_x = i16::min(self_right, other_right) - i16::max(self_left, other_left);
-                    let overlap_y = i16::min(self_bottom, other_bottom) - i16::max(self_top, other_top);
-                    self.collision_effects(&mut object, overlap_x, overlap_y);
+                    //self.prevent_overlap(&mut object);
+                    self.collision_effects(&mut object);
                     objects_list[i] = object;
                 }
             }
@@ -134,11 +134,11 @@ impl Object {
         
         if self.x <= 0 {
             self.x = 0;
-            self.acceleration.0 = 0.0;
+            self.acceleration.0 *= -0.2;
 
         } else if self.x >= self.size + window.get_size().0 as i16 - 300{
             self.x = self.size + window.get_size().0 as i16 - 300;
-            self.acceleration.0 = 0.0;
+            self.acceleration.0 *= -0.2;
         }
 
         if self.y <= 5 {
@@ -147,11 +147,11 @@ impl Object {
 
         } else if self.y >= window.get_size().1 as i16 - self.size{
             self.y = window.get_size().1 as i16 - self.size;
-            self.acceleration.1 = 0.0;
+            self.acceleration.1 *= 0.4;
         }
     }
 
-    pub fn drag(&mut self, window: &mut Window, delta_timer: f32) -> (i16, i16){
+    pub fn drag(&mut self, window: &mut Window, delta_timer: f32, index: i16) -> i16{
 
         let mouse_x: i16 = window.get_mouse_pos(minifb::MouseMode::Clamp).unwrap().0 as i16;
         let mouse_y: i16 = window.get_mouse_pos(minifb::MouseMode::Clamp).unwrap().1 as i16;
@@ -159,7 +159,11 @@ impl Object {
         if !window.get_mouse_down(minifb::MouseButton::Left) 
         || mouse_y <= self.y || mouse_y >= self.y + self.size 
         || mouse_x <= self.x || mouse_x >= self.x + self.size {
-            return (self.x, self.y);
+            return -1;
+        }
+
+        if window.get_mouse_down(minifb::MouseButton::Right) {
+            self.rotate(true);
         }
 
         drop(mouse_x);
@@ -185,6 +189,10 @@ impl Object {
 
         self.acceleration.0 = self.motion(delta_timer, self.prev.0, self.x);
         self.acceleration.1 = self.motion(delta_timer, self.y, self.prev.1);
-        return (self.x, self.y);
+        return index;
+    }
+
+    fn rotate(&mut self, is_drag: bool){
+        return;
     }
 }

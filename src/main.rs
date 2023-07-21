@@ -17,13 +17,18 @@ fn main() {
     let mut object_list: Vec<object::Object> = Vec::new();
     let square_size: usize = 150;
     let mut delta_timer:f32 = 0.01;
+    let mut lock = -1;
 
     while window.is_open() && !window.is_key_down(Key::Escape) {
         let loop_time: Instant = Instant::now();
 
         for i in 0..object_list.len() {
             object_list[i].gravity(delta_timer);
-            object_list[i].drag(&mut window, delta_timer);
+
+            if lock == i as i16 || lock == -1{
+                lock = object_list[i].drag(&mut window, delta_timer, i as i16);
+            }
+
             let mut temp = object_list[i];
             temp.is_colliding(&mut object_list, i);
             object_list[i] = temp;
