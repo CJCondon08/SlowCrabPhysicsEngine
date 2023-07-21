@@ -93,8 +93,9 @@ impl Object {
 
     pub fn prevent_overlap(&mut self, object: &mut Object){
 
-        if self.x+self.size >= object.x && self.y >= object.y - object.size{
-            self.x = object.x + self.size + 1;
+        if self.y+self.size >= object.y && object.y >= 700 - object.size{ //&& self.x - self.size >= object.x && self.x <= object.x + object.size{
+            self.acceleration.1 *= -0.2;
+            //self.y = object.y-self.size;
         }
     }
 
@@ -119,14 +120,11 @@ impl Object {
                 if self_left <= other_right && self_right >= other_left &&
                     self_top <= other_bottom && self_bottom >= other_top {
 
-                    //self.prevent_overlap(&mut object);
+                    self.prevent_overlap(&mut object);
                     self.collision_effects(&mut object);
                     objects_list[i] = object;
                 }
-            }
-
-            //i += 1;
-
+            } 
         }
     }
     
