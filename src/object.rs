@@ -97,12 +97,13 @@ impl Object {
 
     pub fn prevent_overlap(&mut self, object: &mut Object){
 
-        if self.y+self.size >= object.y {//&& object.y >= 700 - object.size{ //&& self.x - self.size >= object.x && self.x <= object.x + object.size{
-            if object.y >= 700 - object.size && self.y <= object.y + (object.size/2){
+        if self.y+self.size >= object.y 
+            && object.y >= 700 - object.size && 
+            (self.x + self.size >= object.x || self.x <= object.x + object.size) && 
+            self.y < object.y - (object.size/3){
                 self.acceleration.1 *= 0.4;
-                self.y -= (self.y + self.size) - object.y; 
-            }    
-            //self.y = 400;
+                self.y = (700 - object.size) - self.size; 
+            
         }
     }
 
