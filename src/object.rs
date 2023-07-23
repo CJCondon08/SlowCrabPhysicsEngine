@@ -4,7 +4,7 @@ use minifb::Window;
 pub struct Object {
     pub x: i16,
     pub y: i16,
-    prev: (i16, i16),
+    pub prev: (i16, i16),
     size: i16,
     mass: f32,
     acceleration: (f32, f32),
@@ -105,6 +105,22 @@ impl Object {
                 self.y = (700 - object.size) - self.size; 
             
         }
+
+        if self.prev.1 <= self.y && self.prev.1 + self.size <= object.y {
+            self.y -= (self.y + self.size) - object.y
+        }
+
+        if self.prev.1 >= self.y && self.prev.1 >= object.y + object.size{
+            self.y += (object.y + object.size) - self.y;
+        }
+
+        if self.prev.0 <= self.x && self.prev.0 + self.size <= object.x {
+            self.x -= (self.x + self.size) - object.x;
+        }
+
+        if self.prev.0 >= self.x && self.prev.0 >= object.x + object.size {
+            self.x += (object.x + object.size) - self.x;
+        }
     }
 
     pub fn is_colliding(&mut self, objects_list: &mut [Object], index: usize) {
@@ -174,8 +190,8 @@ impl Object {
 
         drop(mouse_x);
         drop(mouse_y);
-        self.prev.0 = self.x;
-        self.prev.1 = self.y;
+        //self.prev.0 = self.x;
+        //self.prev.1 = self.y;
 
         let mut is_rigid:bool = false;
 

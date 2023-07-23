@@ -23,6 +23,9 @@ fn main() {
         let loop_time: Instant = Instant::now();
 
         for i in 0..object_list.len() {
+            object_list[i].prev.0 = object_list[i].x;
+            object_list[i].prev.1 = object_list[i].y;
+
             object_list[i].acceleration_controll(delta_timer);
 
             if lock == i as i16 || lock == -1{
@@ -33,6 +36,8 @@ fn main() {
             temp.is_colliding(&mut object_list, i);
             object_list[i] = temp;
             object_list[i].boundries(&mut window);
+
+            
         }
 
         if window.is_key_pressed(Key::S, minifb::KeyRepeat::No) {
