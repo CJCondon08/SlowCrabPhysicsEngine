@@ -100,14 +100,15 @@ impl Object {
         if self.y+self.size >= object.y 
             && object.y >= 700 - object.size && 
             (self.x + self.size >= object.x || self.x <= object.x + object.size) && 
-            self.y < object.y - (object.size/3){
+            self.y < object.y - (object.size/3) {
                 self.acceleration.1 *= 0.4;
                 self.y = (700 - object.size) - self.size; 
             
         }
 
         if self.prev.1 <= self.y && self.prev.1 + self.size <= object.y {
-            self.y -= (self.y + self.size) - object.y
+            self.y -= (self.y + self.size) - object.y;
+            self.is_supported(object);
         }
 
         if self.prev.1 >= self.y && self.prev.1 >= object.y + object.size{
@@ -121,6 +122,15 @@ impl Object {
         if self.prev.0 >= self.x && self.prev.0 >= object.x + object.size {
             self.x += (object.x + object.size) - self.x;
         }
+
+    }
+
+    fn is_supported(&mut self, object: &mut Object) {
+        if self.x + (self.size/2) < object.x || self.x + (self.size/2 ) > object.x + object.size {
+            if self.y+self.size == object.y { 
+                self.fall(false);
+            }    
+        } 
     }
 
     pub fn is_colliding(&mut self, objects_list: &mut [Object], index: usize) {
@@ -143,7 +153,7 @@ impl Object {
         
                 if self_left <= other_right && self_right >= other_left &&
                     self_top <= other_bottom && self_bottom >= other_top {
-
+                    
                     self.prevent_overlap(&mut object);
                     self.collision_effects(&mut object);
                     objects_list[i] = object;
@@ -151,6 +161,8 @@ impl Object {
             } 
         }
     }
+
+
     
     pub fn boundries(&mut self, window: &mut Window){
         
@@ -185,7 +197,7 @@ impl Object {
         }
 
         if window.get_mouse_down(minifb::MouseButton::Right) {
-            self.rotate(true);
+            self.fall(true);
         }
 
         drop(mouse_x);
@@ -214,7 +226,9 @@ impl Object {
         return index;
     }
 
-    fn rotate(&mut self, is_drag: bool){
+    fn fall(&mut self, is_drag: bool){
+        println!("should fall");
+        self.y = 0;
         return;
     }
 }

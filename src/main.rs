@@ -66,6 +66,6 @@ fn main() {
         delta_timer = loop_time.elapsed().as_secs_f32();
         drop(loop_time);
 
-        println!("{}", 1.0/delta_timer);
+        //println!("{}", 1.0/delta_timer);
     }
 }
