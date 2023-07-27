@@ -13,7 +13,7 @@ pub struct Object {
 
 impl Object {
     pub fn new_rigid() -> Object {
-        Object{x: 0, y: 0, prev: (0, 0), size: 150, mass: 5.0, acceleration: (0.0, 0.0), rigid: true}
+        Object{x: 700, y: 500, prev: (700, 500), size: 150, mass: 5.0, acceleration: (0.0, 0.0), rigid: true}
     }
 
     pub fn new_non_rigid() -> Object {
@@ -228,7 +228,7 @@ impl Object {
 
     fn fall(&mut self, is_drag: bool){
         println!("should fall");
-        self.y = 0;
+        self.x += self.size/2;
         return;
     }
 }

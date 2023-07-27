@@ -37,25 +37,36 @@ fn main() {
             object_list[i] = temp;
             object_list[i].boundries(&mut window);
 
-            
         }
 
         if window.is_key_pressed(Key::S, minifb::KeyRepeat::No) {
             let mut square = object::Object::new_rigid();
             //square.y = 0;
-            square.x = 20 + ((square_size+10) * object_list.len()) as i16;
+            //square.x = 20 + ((square_size+10) * object_list.len()) as i16;
             object_list.push(square);
         }
 
         // Clear the windowobject_list[i].
         let buffer = &mut vec![background_color; width * (height + 10)];
-        
+        let theta = 20.0;
+
         //Draw objects
         for z in 0..object_list.len(){
-            for y in object_list[z].y ..(object_list[z].y + square_size as i16) {
-                for x in object_list[z].x ..(object_list[z].x + square_size as i16) {
-                    let index: usize = x as usize + (width * y as usize);
-                    buffer[index] = from_u8_rgb(40*(z as u8), 80, 200);
+            for y in object_list[z].y .. (object_list[z].y + square_size as i16) {
+                for x in object_list[z].x .. (object_list[z].x + square_size as i16) {
+                    let xf = x as f32;
+                    let yf = y as f32;
+
+                    let rot_x = xf * f32::cos(theta) - yf * f32::sin(theta);
+                    let rot_y = xf * f32::sin(theta) + yf * f32::cos(theta);
+
+                    let rot_x_i = rot_x.round() as usize;
+                    let rot_y_i = rot_y.round() as usize;
+
+                    if rot_x_i < width && rot_y_i < height {
+                        let index: usize = rot_x_i + (width * rot_y_i);
+                        buffer[index] = from_u8_rgb(40 * (z as u8), 80, 200);
+                    }
                 }
             }
         }
@@ -66,6 +77,6 @@ fn main() {
         delta_timer = loop_time.elapsed().as_secs_f32();
         drop(loop_time);
 
-        //println!("{}", 1.0/delta_timer);
+        println!("{}", 1.0/delta_timer);
     }
 }
