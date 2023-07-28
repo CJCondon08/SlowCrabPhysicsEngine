@@ -1,11 +1,12 @@
-use minifb::Window;
+use minifb::{Key, Window};
 
 #[derive (Copy, Clone)]
 pub struct Object {
     pub x: i16,
     pub y: i16,
     pub prev: (i16, i16),
-    size: i16,
+    pub theta: f32,
+    pub size: i16,
     mass: f32,
     acceleration: (f32, f32),
     rigid: bool
@@ -13,11 +14,11 @@ pub struct Object {
 
 impl Object {
     pub fn new_rigid() -> Object {
-        Object{x: 700, y: 500, prev: (700, 500), size: 150, mass: 5.0, acceleration: (0.0, 0.0), rigid: true}
+        Object{x: 10, y: 10, prev: (10, 10), theta: 0.0, size: 150, mass: 5.0, acceleration: (0.0, 0.0), rigid: true}
     }
 
     pub fn new_non_rigid() -> Object {
-        Object{x: 0, y: 0, prev: (0, 0), size: 150, mass: 0.0, acceleration: (0.0, 0.0), rigid: false}
+        Object{x: 10, y: 10, prev: (10, 10), theta: 0.0, size: 150, mass: 0.0, acceleration: (0.0, 0.0), rigid: false}
     }
 
     pub fn acceleration_controll(&mut self, delta_timer: f32) {
@@ -128,7 +129,7 @@ impl Object {
     fn is_supported(&mut self, object: &mut Object) {
         if self.x + (self.size/2) < object.x || self.x + (self.size/2 ) > object.x + object.size {
             if self.y+self.size == object.y { 
-                self.fall(false);
+                self.rotate(false);
             }    
         } 
     }
@@ -196,8 +197,8 @@ impl Object {
             return -1;
         }
 
-        if window.get_mouse_down(minifb::MouseButton::Right) {
-            self.fall(true);
+        if window.is_key_pressed(Key::R, minifb::KeyRepeat::No)  {
+            self.rotate(true);
         }
 
         drop(mouse_x);
@@ -226,9 +227,11 @@ impl Object {
         return index;
     }
 
-    fn fall(&mut self, is_drag: bool){
-        println!("should fall");
-        self.x += self.size/2;
+    fn rotate(&mut self, is_drag: bool){
+        self.theta += 45.0;
+        if self.theta > 89.0 {
+            self.theta = 0.0
+        }
         return;
     }
 }

@@ -48,7 +48,6 @@ fn main() {
 
         // Clear the windowobject_list[i].
         let buffer = &mut vec![background_color; width * (height + 10)];
-        let theta = 20.0;
 
         //Draw objects
         for z in 0..object_list.len(){
@@ -56,15 +55,26 @@ fn main() {
                 for x in object_list[z].x .. (object_list[z].x + square_size as i16) {
                     let xf = x as f32;
                     let yf = y as f32;
-
-                    let rot_x = xf * f32::cos(theta) - yf * f32::sin(theta);
-                    let rot_y = xf * f32::sin(theta) + yf * f32::cos(theta);
-
-                    let rot_x_i = rot_x.round() as usize;
-                    let rot_y_i = rot_y.round() as usize;
-
-                    if rot_x_i < width && rot_y_i < height {
-                        let index: usize = rot_x_i + (width * rot_y_i);
+            
+                    // Translate the coordinates to the square's center
+                    let translated_x = xf - (object_list[z].size/2) as f32;
+                    let translated_y = yf - (object_list[z].size/2) as f32;
+            
+                    // Perform rotation (theta is in radians)
+                    let rot_x = translated_x * f32::cos(object_list[z].theta) - translated_y * f32::sin(object_list[z].theta);
+                    let rot_y = translated_x * f32::sin(object_list[z].theta) + translated_y * f32::cos(object_list[z].theta);
+            
+                    // Move the coordinates back to the original position
+                    let rotated_x = rot_x + (object_list[z].size/2) as f32;
+                    let rotated_y = rot_y + (object_list[z].size/2) as f32;
+            
+                    // Round the rotated coordinates to the nearest integer
+                    let rotated_x_i = rotated_x.round() as usize;
+                    let rotated_y_i = rotated_y.round() as usize;
+            
+                    // Check if the rotated coordinates are within the framebuffer bounds
+                    if rotated_x_i < width && rotated_y_i < height {
+                        let index: usize = rotated_x_i + (width * rotated_y_i);
                         buffer[index] = from_u8_rgb(40 * (z as u8), 80, 200);
                     }
                 }
