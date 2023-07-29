@@ -1,9 +1,15 @@
 use minifb::{Key, Window};
 
 #[derive (Copy, Clone)]
-pub struct Object {
+pub struct Point {
     pub x: i16,
-    pub y: i16,
+    pub y: i16
+}
+
+#[derive (Clone)]
+pub struct Object {
+    //vertecies stored from starting top left moving clockwise
+    pub vertex: Vec<Point>,
     pub prev: (i16, i16),
     pub size: i16,
     pub theta: f32,
@@ -14,11 +20,11 @@ pub struct Object {
 
 impl Object {
     pub fn new_rigid() -> Object {
-        Object{x: 200, y: 200, prev: (200, 200), size: 150, theta: 0.0, mass: 5.0, acceleration: (0.0, 0.0), rigid: true}
+        Object{vertex: vec![Point{x: 200, y: 200}, Point{x: 350, y: 200}, Point{x: 350, y: 350}, Point{x: 200, y: 350}], prev: (200, 200), size: 150, theta: 0.0, mass: 5.0, acceleration: (0.0, 0.0), rigid: true}
     }
 
     pub fn new_non_rigid() -> Object {
-        Object{x: 200, y: 200, prev: (200, 200), size: 150, theta: 0.0, mass: 0.0, acceleration: (0.0, 0.0), rigid: false}
+        Object{vertex: vec![Point{x: 200, y: 200}, Point{x: 350, y: 200}, Point{x: 350, y: 350}, Point{x: 200, y: 350}], prev: (200, 200), size: 150, theta: 0.0, mass: 0.0, acceleration: (0.0, 0.0), rigid: false}
     }
 
     pub fn acceleration_controll(&mut self, delta_timer: f32) {
@@ -30,14 +36,14 @@ impl Object {
         //gravity
         let mut friction:f32 = 5.0;
 
-        if self.y >= 700 - self.size {
+        if self.vertex[0].y >= 700 - self.size {
             friction *= self.mass*0.6;
             self.acceleration.1 *= -0.5;
         }
 
         let g: f32 = -9.8*3.0;
-        self.acceleration.1 -= g*delta_timer;  
-        self.y += self.acceleration.1.floor() as i16;
+        self.acceleration.1 -= g*delta_timer;
+        self.vertex[0].y += self.acceleration.1.floor() as i16;
 
         //friction
 
@@ -60,7 +66,7 @@ impl Object {
         }
 
         self.acceleration.0 += friction*delta_timer;
-        self.x -= self.acceleration.0.floor() as i16;
+        self.vertex[0].x -= self.acceleration.0.floor() as i16;
 
     }
 
