@@ -165,8 +165,29 @@ impl Object {
         }
     }
 
+    fn get_point(&mut self, max: bool, x: bool) -> Point{
 
-    
+        let mut result = self.vertex[0];
+        
+        if x{
+            for i in 1..4 {
+                if (result.x < self.vertex[i].x && max) || (result.x > self.vertex[i].x && !max) {
+                    result = self.vertex[i]
+                }
+            }
+            return result;
+        }    
+
+        for i in 1..4 {
+            if(result.y < self.vertex[i].y && max) || (result.y > self.vertex[i].y && !max) {
+                result = self.vertex[i];
+            } 
+        }
+
+        return result;
+
+    }
+
     pub fn boundries(&mut self, window: &mut Window){
         
         if self.x <= 0 {
