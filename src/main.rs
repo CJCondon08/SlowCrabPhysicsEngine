@@ -73,10 +73,10 @@ fn main() {
                     let rotated_y_i = rotated_y.round() as usize;
             
                     // Check if the rotated coordinates are within the framebuffer bounds
-                    if rotated_x_i < width && rotated_y_i < height {
+                    //if rotated_x_i < width && rotated_y_i < height {
                         let index: usize = rotated_x_i + (width * rotated_y_i);
                         buffer[index] = from_u8_rgb(40 * (z as u8), 80, 200);
-                    }
+                    //}
                 }
             }
         }

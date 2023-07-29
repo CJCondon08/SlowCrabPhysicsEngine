@@ -5,8 +5,8 @@ pub struct Object {
     pub x: i16,
     pub y: i16,
     pub prev: (i16, i16),
-    pub theta: f32,
     pub size: i16,
+    pub theta: f32,
     mass: f32,
     acceleration: (f32, f32),
     rigid: bool
@@ -14,11 +14,11 @@ pub struct Object {
 
 impl Object {
     pub fn new_rigid() -> Object {
-        Object{x: 10, y: 10, prev: (10, 10), theta: 0.0, size: 150, mass: 5.0, acceleration: (0.0, 0.0), rigid: true}
+        Object{x: 200, y: 200, prev: (200, 200), size: 150, theta: 0.0, mass: 5.0, acceleration: (0.0, 0.0), rigid: true}
     }
 
     pub fn new_non_rigid() -> Object {
-        Object{x: 10, y: 10, prev: (10, 10), theta: 0.0, size: 150, mass: 0.0, acceleration: (0.0, 0.0), rigid: false}
+        Object{x: 200, y: 200, prev: (200, 200), size: 150, theta: 0.0, mass: 0.0, acceleration: (0.0, 0.0), rigid: false}
     }
 
     pub fn acceleration_controll(&mut self, delta_timer: f32) {
@@ -28,8 +28,10 @@ impl Object {
         }
         
         //gravity
+        let mut friction:f32 = 5.0;
 
         if self.y >= 700 - self.size {
+            friction *= self.mass*0.6;
             self.acceleration.1 *= -0.5;
         }
 
@@ -38,8 +40,6 @@ impl Object {
         self.y += self.acceleration.1.floor() as i16;
 
         //friction
-
-        let mut friction:f32 = 5.0;
 
         if self.acceleration.0 > 0.0 {
             friction = -5.0;
@@ -57,10 +57,6 @@ impl Object {
 
         if self.acceleration.0 == 0.0 {
             return;
-        }
-
-        if self.y >= 700 - self.size {
-            friction *= self.mass*0.6;
         }
 
         self.acceleration.0 += friction*delta_timer;
@@ -129,7 +125,7 @@ impl Object {
     fn is_supported(&mut self, object: &mut Object) {
         if self.x + (self.size/2) < object.x || self.x + (self.size/2 ) > object.x + object.size {
             if self.y+self.size == object.y { 
-                self.rotate(false);
+                self.fall(false);
             }    
         } 
     }
@@ -197,8 +193,8 @@ impl Object {
             return -1;
         }
 
-        if window.is_key_pressed(Key::R, minifb::KeyRepeat::No)  {
-            self.rotate(true);
+        if window.is_key_pressed(Key::S, minifb::KeyRepeat::No) {
+            self.fall(true);
         }
 
         drop(mouse_x);
@@ -227,10 +223,9 @@ impl Object {
         return index;
     }
 
-    fn rotate(&mut self, is_drag: bool){
-        self.theta += 45.0;
-        if self.theta > 89.0 {
-            self.theta = 0.0
+    fn fall(&mut self, is_drag: bool){
+        if self.theta >= 89.0 {
+            self.theta = 0.0;
         }
         return;
     }
