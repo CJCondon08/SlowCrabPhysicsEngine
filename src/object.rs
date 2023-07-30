@@ -98,7 +98,7 @@ impl Object {
 
     }
 
-    pub fn prevent_overlap(&mut self, object: &mut Object){
+    /*pub fn prevent_overlap(&mut self, object: &mut Object){
 
         if self.y+self.size >= object.y 
             && object.y >= 700 - object.size && 
@@ -126,15 +126,15 @@ impl Object {
             self.x += (object.x + object.size) - self.x;
         }
 
-    }
+    }*/
 
-    fn is_supported(&mut self, object: &mut Object) {
+    /*fn is_supported(&mut self, object: &mut Object) {
         if self.x + (self.size/2) < object.x || self.x + (self.size/2 ) > object.x + object.size {
             if self.y+self.size == object.y { 
                 self.fall(false);
             }    
         } 
-    }
+    }*/
 
     pub fn is_colliding(&mut self, objects_list: &mut [Object], index: usize) {
         if objects_list.len() < 2 {
@@ -142,24 +142,24 @@ impl Object {
         }
 
         for i in 0..objects_list.len() {
-            let mut object = objects_list[i]; 
+            let mut object = objects_list[i].clone(); 
             if i != index {
-                let self_left = self.x - self.size / 2;
-                let self_right = self.x + self.size / 2;
-                let self_top = self.y - self.size / 2;
-                let self_bottom = self.y + self.size / 2;
+                let self_left = self.vertex[0].x - self.size / 2;
+                let self_right = self.vertex[0].x + self.size / 2;
+                let self_top = self.vertex[0].y - self.size / 2;
+                let self_bottom = self.vertex[0].y + self.size / 2;
         
-                let other_left = object.x - object.size / 2;
-                let other_right = object.x + object.size / 2;
-                let other_top = object.y - object.size / 2;
-                let other_bottom = object.y + object.size / 2;
+                let other_left = object.vertex[0].x - object.size / 2;
+                let other_right = object.vertex[0].x + object.size / 2;
+                let other_top = object.vertex[0].y - object.size / 2;
+                let other_bottom = object.vertex[0].y + object.size / 2;
         
                 if self_left <= other_right && self_right >= other_left &&
                     self_top <= other_bottom && self_bottom >= other_top {
                     
-                    self.prevent_overlap(&mut object);
+                    //self.prevent_overlap(&mut object);
                     self.collision_effects(&mut object);
-                    objects_list[i] = object;
+                    objects_list[i] = object.clone();
                 }
             } 
         }
@@ -188,23 +188,35 @@ impl Object {
 
     }
 
+    pub fn update_points(&mut self){
+        self.vertex[1].x = self.vertex[0].x + self.size;
+        self.vertex[1].y = self.vertex[0].y;
+
+        self.vertex[2].x = self.vertex[0].x + self.size;
+        self.vertex[2].y = self.vertex[0].y + self.size;
+
+        self.vertex[3].x = self.vertex[0].x;
+        self.vertex[3].y = self.vertex[0].y + self.size;
+
+    }
+
     pub fn boundries(&mut self, window: &mut Window){
         
-        if self.x <= 0 {
-            self.x = 0;
+        if self.get_point(false, true).x <= 0 {
+            self.vertex[0].x += (0 - self.get_point(false, true).x);
             self.acceleration.0 *= -0.2;
 
-        } else if self.x >= self.size + window.get_size().0 as i16 - 300{
-            self.x = self.size + window.get_size().0 as i16 - 300;
+        } else if self.get_point(true, true).x >= self.size + window.get_size().0 as i16 - 300{
+            self.vertex[0].x -= (window.get_size().0 as i16 - 300) - self.get_point(true, true).x;
             self.acceleration.0 *= -0.2;
         }
 
-        if self.y <= 5 {
-            self.y = 6;
-            self.acceleration.1 = 0.0;
+        if self.get_point(false, false).y <= 5 {
+            self.vertex[0].y += (5 - self.get_point(false, false).y);
+            self.acceleration.1 *= -0.2;
 
-        } else if self.y >= window.get_size().1 as i16 - self.size{
-            self.y = window.get_size().1 as i16 - self.size;
+        } else if self.get_point(true, false).y >= window.get_size().1 as i16 - 10{
+            self.vertex[0].y -= window.get_size().1 as i16 - self.get_point(true, false).y;
             self.acceleration.1 *= 0.4;
         }
     }
@@ -215,8 +227,8 @@ impl Object {
         let mouse_y: i16 = window.get_mouse_pos(minifb::MouseMode::Clamp).unwrap().1 as i16;
 
         if !window.get_mouse_down(minifb::MouseButton::Left) 
-        || mouse_y <= self.y || mouse_y >= self.y + self.size 
-        || mouse_x <= self.x || mouse_x >= self.x + self.size {
+        || mouse_y <= self.get_point(false, false).y || mouse_y >= self.get_point(true, false).y
+        || mouse_x <= self.get_point(false, true).x || mouse_x >= self.get_point(true, true).x {
             return -1;
         }
 
@@ -238,15 +250,15 @@ impl Object {
             self.acceleration.0 = 0.0;
         }
 
-        self.x = window.get_mouse_pos(minifb::MouseMode::Clamp).unwrap().0 as i16 - self.size/2;
-        self.y = window.get_mouse_pos(minifb::MouseMode::Clamp).unwrap().1 as i16 - self.size/2;
+        self.vertex[0].x = window.get_mouse_pos(minifb::MouseMode::Clamp).unwrap().0 as i16 - self.size/2;
+        self.vertex[0].y = window.get_mouse_pos(minifb::MouseMode::Clamp).unwrap().1 as i16 - self.size/2;
 
         if is_rigid {
             self.rigid = true;
         }
 
-        self.acceleration.0 = self.motion(delta_timer, self.prev.0, self.x);
-        self.acceleration.1 = self.motion(delta_timer, self.y, self.prev.1);
+        self.acceleration.0 = self.motion(delta_timer, self.prev.0, self.vertex[0].x);
+        self.acceleration.1 = self.motion(delta_timer, self.vertex[0].y, self.prev.1);
         return index;
     }
 

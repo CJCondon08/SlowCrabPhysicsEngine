@@ -26,13 +26,14 @@ fn main() {
             object_list[i].prev.0 = object_list[i].vertex[0].x;
             object_list[i].prev.1 = object_list[i].vertex[0].y;
 
+            object_list[i].update_points();
             object_list[i].acceleration_controll(delta_timer);
 
             if lock == i as i16 || lock == -1{
                 lock = object_list[i].drag(&mut window, delta_timer, i as i16);
             }
 
-            let mut temp = object_list[i];
+            let mut temp = object_list[i].clone();
             temp.is_colliding(&mut object_list, i);
             object_list[i] = temp;
             object_list[i].boundries(&mut window);
@@ -51,7 +52,7 @@ fn main() {
 
         //Draw objects
         for z in 0..object_list.len(){
-            let square = object_list[z];
+            let square = &object_list[z];
             for y in square.vertex[0].y .. (square.vertex[0].y + square_size as i16) {
                 for x in square.vertex[0].x .. (square.vertex[0].x + square_size as i16) {
                     let xf = x as f32;
