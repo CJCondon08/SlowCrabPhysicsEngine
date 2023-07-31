@@ -206,17 +206,17 @@ impl Object {
             self.vertex[0].x += (0 - self.get_point(false, true).x);
             self.acceleration.0 *= -0.2;
 
-        } else if self.get_point(true, true).x >= self.size + window.get_size().0 as i16 - 300{
-            self.vertex[0].x -= (window.get_size().0 as i16 - 300) - self.get_point(true, true).x;
+        } else if self.get_point(true, true).x >= self.size + window.get_size().0 as i16 - 150 {
+            self.vertex[0].x -= self.get_point(true, true).x - (window.get_size().0 as i16);
             self.acceleration.0 *= -0.2;
         }
 
         if self.get_point(false, false).y <= 5 {
-            self.vertex[0].y += (5 - self.get_point(false, false).y);
+            self.vertex[0].y += (6 - self.get_point(false, false).y);
             self.acceleration.1 *= -0.2;
 
-        } else if self.get_point(true, false).y >= window.get_size().1 as i16 - 10{
-            self.vertex[0].y -= window.get_size().1 as i16 - self.get_point(true, false).y;
+        } else if self.get_point(true, false).y > window.get_size().1 as i16 {
+            self.vertex[0].y -= self.get_point(true, false).y - window.get_size().1 as i16;
             self.acceleration.1 *= 0.4;
         }
     }
