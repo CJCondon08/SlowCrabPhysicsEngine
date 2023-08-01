@@ -10,6 +10,7 @@ pub struct Point {
 pub struct Object {
     //vertecies stored from starting top left moving clockwise
     pub vertex: Vec<Point>,
+    //tracks top-left corrner when theta == 0.0
     pub prev: (i16, i16),
     pub size: i16,
     pub theta: f32,
@@ -48,14 +49,14 @@ impl Object {
         //friction
 
         if self.acceleration.0 > 0.0 {
-            friction = -5.0;
+            friction *= -1.0;
 
-            if self.acceleration.0 <= 0.1 {
+            if self.acceleration.0 <= 0.05 {
                 self.acceleration.0 = 0.0;
             }
         } else if self.acceleration.0 <= 0.0{
-            friction = 5.0;
-            if self.acceleration.0 >= -0.1 {
+            //friction = 5.0;
+            if self.acceleration.0 >= -0.05 {
                 self.acceleration.0 = 0.0;
                 
             }
@@ -98,35 +99,36 @@ impl Object {
 
     }
 
-    /*pub fn prevent_overlap(&mut self, object: &mut Object){
+    pub fn prevent_overlap(&mut self, object: &mut Object){
 
-        if self.y+self.size >= object.y 
-            && object.y >= 700 - object.size && 
-            (self.x + self.size >= object.x || self.x <= object.x + object.size) && 
-            self.y < object.y - (object.size/3) {
+        if self.get_point(true, false).y >= object.get_point(false, false).y 
+            && object.get_point(true, false).y >= 700 && 
+            (self.get_point(true, true).x >= object.get_point(false, true).x || self.get_point(false, true).x <= object.get_point(true, true).x) && 
+            self.get_point(false, false).y < object.get_point(false, false).y - (object.size/3) {
                 self.acceleration.1 *= 0.4;
-                self.y = (700 - object.size) - self.size; 
+                self.vertex[0].y = (700 - object.size) - self.size; 
             
         }
 
-        if self.prev.1 <= self.y && self.prev.1 + self.size <= object.y {
-            self.y -= (self.y + self.size) - object.y;
-            self.is_supported(object);
+        // could cause unexpected behavior if prev is not multiplied by theta properly
+        if self.prev.1 <= self.vertex[0].y && self.prev.1 + self.size <= object.vertex[0].y {
+            self.vertex[0].y -= (self.vertex[0].y + self.size) - object.vertex[0].y;
+            //self.is_supported(object);
         }
 
-        if self.prev.1 >= self.y && self.prev.1 >= object.y + object.size{
-            self.y += (object.y + object.size) - self.y;
+        if self.prev.1 >= self.vertex[0].y && self.prev.1 >= object.get_point(true, false).y {
+            self.vertex[0].y += (object.vertex[0].y + object.size) - self.vertex[0].y;
         }
 
-        if self.prev.0 <= self.x && self.prev.0 + self.size <= object.x {
-            self.x -= (self.x + self.size) - object.x;
+        if self.prev.0 <= self.vertex[0].x && self.prev.0 + self.size <= object.vertex[0].x {
+            self.vertex[0].x -= (self.vertex[0].x + self.size) - object.vertex[0].x;
         }
 
-        if self.prev.0 >= self.x && self.prev.0 >= object.x + object.size {
-            self.x += (object.x + object.size) - self.x;
+        if self.prev.0 >= self.vertex[0].x && self.prev.0 >= object.get_point(true, true).x {
+            self.vertex[0].x += (object.vertex[0].x + object.size) - self.vertex[0].x;
         }
 
-    }*/
+    }
 
     /*fn is_supported(&mut self, object: &mut Object) {
         if self.x + (self.size/2) < object.x || self.x + (self.size/2 ) > object.x + object.size {
@@ -157,7 +159,7 @@ impl Object {
                 if self_left <= other_right && self_right >= other_left &&
                     self_top <= other_bottom && self_bottom >= other_top {
                     
-                    //self.prevent_overlap(&mut object);
+                    self.prevent_overlap(&mut object);
                     self.collision_effects(&mut object);
                     objects_list[i] = object.clone();
                 }
@@ -191,28 +193,44 @@ impl Object {
     pub fn update_points(&mut self){
         self.vertex[1].x = self.vertex[0].x + self.size;
         self.vertex[1].y = self.vertex[0].y;
+        
+        self.vertex[1] = self.get_rotation(self.vertex[1]);
 
         self.vertex[2].x = self.vertex[0].x + self.size;
         self.vertex[2].y = self.vertex[0].y + self.size;
 
+        self.vertex[2] = self.get_rotation(self.vertex[2]);
+
         self.vertex[3].x = self.vertex[0].x;
         self.vertex[3].y = self.vertex[0].y + self.size;
 
+        self.vertex[3] = self.get_rotation(self.vertex[3]);
+
+    }
+
+    fn get_rotation(&mut self, corrner: Point) -> Point {
+        let mut result = Point{x: 0, y: 0};
+
+        result.x = (corrner.x * f32::cos(self.theta).round() as i16) - (corrner.y * f32::sin(self.theta).round() as i16);
+        result.y = (corrner.x * f32::sin(self.theta).round() as i16) + (corrner.y * f32::cos(self.theta).round() as i16);
+        return result;
     }
 
     pub fn boundries(&mut self, window: &mut Window){
         
         if self.get_point(false, true).x <= 0 {
-            self.vertex[0].x += (0 - self.get_point(false, true).x);
+            self.vertex[0].x += 1 - self.get_point(false, true).x;
             self.acceleration.0 *= -0.2;
 
-        } else if self.get_point(true, true).x >= self.size + window.get_size().0 as i16 - 150 {
-            self.vertex[0].x -= self.get_point(true, true).x - (window.get_size().0 as i16);
+        } else if self.get_point(true, true).x > window.get_size().0 as i16{
+            //+35 so it wont stick to the wall, needs more diagnosing
+            self.vertex[0].x -= self.get_point(true, true).x - window.get_size().0 as i16 + 35;
+            //self.vertex[0].x -= 15;
             self.acceleration.0 *= -0.2;
         }
 
         if self.get_point(false, false).y <= 5 {
-            self.vertex[0].y += (6 - self.get_point(false, false).y);
+            self.vertex[0].y += 6 - self.get_point(false, false).y;
             self.acceleration.1 *= -0.2;
 
         } else if self.get_point(true, false).y > window.get_size().1 as i16 {
@@ -232,7 +250,7 @@ impl Object {
             return -1;
         }
 
-        if window.is_key_pressed(Key::S, minifb::KeyRepeat::No) {
+        if window.is_key_pressed(Key::R, minifb::KeyRepeat::No) {
             self.fall(true);
         }
 
