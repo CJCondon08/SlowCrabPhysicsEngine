@@ -111,21 +111,21 @@ impl Object {
         }
 
         // could cause unexpected behavior if prev is not rotated by theta properly
-        if self.prev.y <= self.vertex[0].y && self.prev.y + self.size <= object.vertex[0].y {
-            self.vertex[0].y -= (self.vertex[0].y + self.size) - object.vertex[0].y;
+        if self.prev.y <= self.vertex[0].y && self.get_point(true, false).y <= object.vertex[0].y {
+            self.vertex[0].y -= (self.get_point(true, false).y) - object.get_point(false, true).y;
             //self.is_supported(object);
         }
 
-        if self.prev.y >= self.vertex[0].y && self.prev.y >= object.get_point(true, false).y {
-            self.vertex[0].y += (object.vertex[0].y + object.size) - self.vertex[0].y;
+        if self.prev.y >= self.vertex[0].y && self.get_point(false, false).y >= object.get_point(true, false).y {
+            self.vertex[0].y += (object.get_point(true, false).y) - self.get_point(false, false).y;
         }
 
-        if self.prev.x <= self.vertex[0].x && self.prev.x + self.size <= object.vertex[0].x {
-            self.vertex[0].x -= (self.vertex[0].x + self.size) - object.vertex[0].x;
+        if self.prev.x <= self.vertex[0].x && self.get_point(true, true).x <= object.get_point(false, true).x {
+            self.vertex[0].x -= (self.get_point(true, true).x) - object.get_point(false, true).x;
         }
 
-        if self.prev.x >= self.vertex[0].x && self.prev.x >= object.get_point(true, true).x {
-            self.vertex[0].x += (object.vertex[0].x + object.size) - self.vertex[0].x;
+        if self.prev.x >= self.vertex[0].x && self.get_point(false, true).x >= object.get_point(true, true).x {
+            self.vertex[0].x += (object.get_point(true, true).x) - self.get_point(false, true).x;
         }
 
     }
