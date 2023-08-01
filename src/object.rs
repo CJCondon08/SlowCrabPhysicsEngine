@@ -110,7 +110,7 @@ impl Object {
             
         }
 
-        // could cause unexpected behavior if prev is not rotated by theta properly
+
         if self.prev.y <= self.vertex[0].y && self.get_point(true, false).y <= object.vertex[0].y {
             self.vertex[0].y -= (self.get_point(true, false).y) - object.get_point(false, true).y;
             //self.is_supported(object);
