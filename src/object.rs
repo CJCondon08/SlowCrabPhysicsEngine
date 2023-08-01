@@ -11,7 +11,7 @@ pub struct Object {
     //vertecies stored from starting top left moving clockwise
     pub vertex: Vec<Point>,
     //tracks top-left corrner when theta == 0.0
-    pub prev: (i16, i16),
+    pub prev: Point,
     pub size: i16,
     pub theta: f32,
     mass: f32,
@@ -21,11 +21,11 @@ pub struct Object {
 
 impl Object {
     pub fn new_rigid() -> Object {
-        Object{vertex: vec![Point{x: 200, y: 200}, Point{x: 350, y: 200}, Point{x: 350, y: 350}, Point{x: 200, y: 350}], prev: (200, 200), size: 150, theta: 0.0, mass: 5.0, acceleration: (0.0, 0.0), rigid: true}
+        Object{vertex: vec![Point{x: 200, y: 200}, Point{x: 350, y: 200}, Point{x: 350, y: 350}, Point{x: 200, y: 350}], prev: Point{x: 200, y: 200}, size: 150, theta: 0.0, mass: 5.0, acceleration: (0.0, 0.0), rigid: true}
     }
 
     pub fn new_non_rigid() -> Object {
-        Object{vertex: vec![Point{x: 200, y: 200}, Point{x: 350, y: 200}, Point{x: 350, y: 350}, Point{x: 200, y: 350}], prev: (200, 200), size: 150, theta: 0.0, mass: 0.0, acceleration: (0.0, 0.0), rigid: false}
+        Object{vertex: vec![Point{x: 200, y: 200}, Point{x: 350, y: 200}, Point{x: 350, y: 350}, Point{x: 200, y: 350}], prev: Point{x: 200, y: 200}, size: 150, theta: 0.0, mass: 0.0, acceleration: (0.0, 0.0), rigid: false}
     }
 
     pub fn acceleration_controll(&mut self, delta_timer: f32) {
@@ -110,21 +110,21 @@ impl Object {
             
         }
 
-        // could cause unexpected behavior if prev is not multiplied by theta properly
-        if self.prev.1 <= self.vertex[0].y && self.prev.1 + self.size <= object.vertex[0].y {
+        // could cause unexpected behavior if prev is not rotated by theta properly
+        if self.prev.y <= self.vertex[0].y && self.prev.y + self.size <= object.vertex[0].y {
             self.vertex[0].y -= (self.vertex[0].y + self.size) - object.vertex[0].y;
             //self.is_supported(object);
         }
 
-        if self.prev.1 >= self.vertex[0].y && self.prev.1 >= object.get_point(true, false).y {
+        if self.prev.y >= self.vertex[0].y && self.prev.y >= object.get_point(true, false).y {
             self.vertex[0].y += (object.vertex[0].y + object.size) - self.vertex[0].y;
         }
 
-        if self.prev.0 <= self.vertex[0].x && self.prev.0 + self.size <= object.vertex[0].x {
+        if self.prev.x <= self.vertex[0].x && self.prev.x + self.size <= object.vertex[0].x {
             self.vertex[0].x -= (self.vertex[0].x + self.size) - object.vertex[0].x;
         }
 
-        if self.prev.0 >= self.vertex[0].x && self.prev.0 >= object.get_point(true, true).x {
+        if self.prev.x >= self.vertex[0].x && self.prev.x >= object.get_point(true, true).x {
             self.vertex[0].x += (object.vertex[0].x + object.size) - self.vertex[0].x;
         }
 
@@ -206,6 +206,8 @@ impl Object {
 
         self.vertex[3] = self.get_rotation(self.vertex[3]);
 
+        self.vertex[1] = self.get_rotation(self.vertex[1]);
+
     }
 
     fn get_rotation(&mut self, corrner: Point) -> Point {
@@ -251,13 +253,13 @@ impl Object {
         }
 
         if window.is_key_pressed(Key::R, minifb::KeyRepeat::No) {
-            self.fall(true);
+            self.rotate(true);
         }
 
         drop(mouse_x);
         drop(mouse_y);
-        //self.prev.0 = self.x;
-        //self.prev.1 = self.y;
+        //self.prev.x = self.x;
+        //self.prev.y = self.y;
 
         let mut is_rigid:bool = false;
 
@@ -275,15 +277,18 @@ impl Object {
             self.rigid = true;
         }
 
-        self.acceleration.0 = self.motion(delta_timer, self.prev.0, self.vertex[0].x);
-        self.acceleration.1 = self.motion(delta_timer, self.vertex[0].y, self.prev.1);
+        self.acceleration.0 = self.motion(delta_timer, self.prev.x, self.vertex[0].x);
+        self.acceleration.1 = self.motion(delta_timer, self.vertex[0].y, self.prev.y);
         return index;
     }
 
-    fn fall(&mut self, is_drag: bool){
+    fn rotate(&mut self, is_drag: bool){
         if self.theta >= 89.0 {
             self.theta = 0.0;
+        }else {
+            self.theta += 45.0;
         }
+
         return;
     }
 }
