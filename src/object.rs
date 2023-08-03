@@ -146,22 +146,17 @@ impl Object {
         for i in 0..objects_list.len() {
             let mut object = objects_list[i].clone(); 
             if i != index {
-                let self_left = self.vertex[0].x - self.size / 2;
-                let self_right = self.vertex[0].x + self.size / 2;
-                let self_top = self.vertex[0].y - self.size / 2;
-                let self_bottom = self.vertex[0].y + self.size / 2;
         
-                let other_left = object.vertex[0].x - object.size / 2;
-                let other_right = object.vertex[0].x + object.size / 2;
-                let other_top = object.vertex[0].y - object.size / 2;
-                let other_bottom = object.vertex[0].y + object.size / 2;
-        
-                if self_left <= other_right && self_right >= other_left &&
-                    self_top <= other_bottom && self_bottom >= other_top {
+                if self.get_point(true, false).y >= object.get_point(false, false).y &&
+                self.get_point(false, false).y <= object.get_point(true, false).y &&
+                self.get_point(true, true).x >= object.get_point(false, true).x &&
+                self.get_point(false, true).x <= object.get_point(true, true).x{
                     
                     self.prevent_overlap(&mut object);
                     self.collision_effects(&mut object);
                     objects_list[i] = object.clone();
+
+                    println!("collision, {}", i);
                 }
             } 
         }
