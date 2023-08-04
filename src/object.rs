@@ -106,23 +106,18 @@ impl Object {
                 self.vertex[0].y -= pen_depth + 1;
             }
         
-        } else if self.get_point(false, false).y <= object.get_point(true, false).y {
+        } else if self.prev.y > self.vertex[0].y && self.get_point(false, false).y <= object.get_point(true, false).y {
             self.vertex[0].y += object.get_point(true, false).y - self.get_point(false, false).y + 1;
 
-        }
-        
-        if self.prev.x > self.vertex[0].x && self.get_point(true, true).x >= object.get_point(false, true).x && 
+        } else if self.prev.x > self.vertex[0].x && self.get_point(true, true).x >= object.get_point(false, true).x && 
         self.get_point(false, true).x < object.get_point(false, true).x{
 
             self.vertex[0].x -= self.get_point(true, true).x - object.get_point(false, true).x;
-            self.vertex[0].x -= 1;
-            self.acceleration.0 *= -0.2;
         
         } else if self.prev.x > self.vertex[0].x && self.get_point(false, true).x <= object.get_point(true, true).x &&
         self.get_point(false, true).x > object.get_point(false, true).x{
             
             self.vertex[0].x += object.get_point(true, true).x - self.get_point(false, true).x;
-            self.vertex[0].x += 1;
         }
     }
 
