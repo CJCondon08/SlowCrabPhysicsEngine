@@ -101,33 +101,26 @@ impl Object {
 
     pub fn prevent_overlap(&mut self, object: &mut Object){
 
-        if self.get_point(true, false).y >= object.get_point(false, false).y 
-            && object.get_point(true, false).y >= 700 && 
-            (self.get_point(true, true).x >= object.get_point(false, true).x || self.get_point(false, true).x <= object.get_point(true, true).x) && 
-            self.get_point(false, false).y < object.get_point(false, false).y - (object.size/3) {
-                self.acceleration.1 *= 0.4;
-                self.vertex[0].y = (700 - object.size) - self.size; 
+        if self.get_point(true, false).y >= object.get_point(false, false).y &&
+        self.get_point(false, false).y < object.get_point(false, false).y - (object.size/3){
+            self.acceleration.1 *= 0.4;
+            let pen_depth = self.get_point(true, false).y - object.get_point(false, false).y; 
             
+            if pen_depth > 0 {
+                self.vertex[0].y -= pen_depth + 1;
+            }
+        
+        } else if self.get_point(false, false).y <= object.get_point(true, false).y {
+            self.vertex[0].y += object.get_point(true, false).y - self.get_point(false, false).y + 1;
         }
 
+        if self.prev.x < self.vertex[0].x && self.get_point(true, true).x >= object.get_point(false, true).x {
+            self.vertex[0].x -= self.get_point(true, true).x - object.get_point(false, true).x;
+        
+        } else if self.prev.x > self.vertex[0].x && self.get_point(false, true).x <= object.get_point(true, true).x {
+            self.vertex[0].x += object.get_point(true, true).x - self.get_point(false, true).x + 1;
 
-        if self.prev.y <= self.vertex[0].y && self.get_point(true, false).y <= object.vertex[0].y {
-            self.vertex[0].y -= (self.get_point(true, false).y) - object.get_point(false, true).y;
-            //self.is_supported(object);
         }
-
-        if self.prev.y >= self.vertex[0].y && self.get_point(false, false).y >= object.get_point(true, false).y {
-            self.vertex[0].y += (object.get_point(true, false).y) - self.get_point(false, false).y;
-        }
-
-        if self.prev.x <= self.vertex[0].x && self.get_point(true, true).x <= object.get_point(false, true).x {
-            self.vertex[0].x -= (self.get_point(true, true).x) - object.get_point(false, true).x;
-        }
-
-        if self.prev.x >= self.vertex[0].x && self.get_point(false, true).x >= object.get_point(true, true).x {
-            self.vertex[0].x += (object.get_point(true, true).x) - self.get_point(false, true).x;
-        }
-
     }
 
     /*fn is_supported(&mut self, object: &mut Object) {
@@ -155,8 +148,6 @@ impl Object {
                     self.prevent_overlap(&mut object);
                     self.collision_effects(&mut object);
                     objects_list[i] = object.clone();
-
-                    println!("collision, {}", i);
                 }
             } 
         }
