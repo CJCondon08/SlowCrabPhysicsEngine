@@ -24,10 +24,6 @@ impl Object {
         Object{vertex: vec![Point{x: 200, y: 200}, Point{x: 350, y: 200}, Point{x: 350, y: 350}, Point{x: 200, y: 350}], prev: Point{x: 200, y: 200}, size: 150, theta: 0.0, mass: 5.0, acceleration: (0.0, 0.0), rigid: true}
     }
 
-    pub fn new_non_rigid() -> Object {
-        Object{vertex: vec![Point{x: 200, y: 200}, Point{x: 350, y: 200}, Point{x: 350, y: 350}, Point{x: 200, y: 350}], prev: Point{x: 200, y: 200}, size: 150, theta: 0.0, mass: 0.0, acceleration: (0.0, 0.0), rigid: false}
-    }
-
     pub fn acceleration_controll(&mut self, delta_timer: f32) {
 
         if self.rigid == false {
@@ -112,19 +108,26 @@ impl Object {
         
         } else if self.get_point(false, false).y <= object.get_point(true, false).y {
             self.vertex[0].y += object.get_point(true, false).y - self.get_point(false, false).y + 1;
+
         }
-
-        if self.prev.x < self.vertex[0].x && self.get_point(true, true).x >= object.get_point(false, true).x {
-            self.vertex[0].x -= self.get_point(true, true).x - object.get_point(false, true).x;
         
-        } else if self.prev.x > self.vertex[0].x && self.get_point(false, true).x <= object.get_point(true, true).x {
-            self.vertex[0].x += object.get_point(true, true).x - self.get_point(false, true).x + 1;
+        if self.prev.x > self.vertex[0].x && self.get_point(true, true).x >= object.get_point(false, true).x && 
+        self.get_point(false, true).x < object.get_point(false, true).x{
 
+            self.vertex[0].x -= self.get_point(true, true).x - object.get_point(false, true).x;
+            self.vertex[0].x -= 1;
+            self.acceleration.0 *= -0.2;
+        
+        } else if self.prev.x > self.vertex[0].x && self.get_point(false, true).x <= object.get_point(true, true).x &&
+        self.get_point(false, true).x > object.get_point(false, true).x{
+            
+            self.vertex[0].x += object.get_point(true, true).x - self.get_point(false, true).x;
+            self.vertex[0].x += 1;
         }
     }
 
     /*fn is_supported(&mut self, object: &mut Object) {
-        if self.x + (self.size/2) < object.x || self.x + (self.size/2 ) > object.x + object.size {
+        if self.x + (self.size/2) < object.x || self.x + (self.size/2 ) > object.x + object.size {=
             if self.y+self.size == object.y { 
                 self.fall(false);
             }    
@@ -271,7 +274,7 @@ impl Object {
     fn rotate(&mut self, is_drag: bool){
         if self.theta >= 89.0 {
             self.theta = 0.0;
-        }else {
+        }else if is_drag{
             self.theta += 45.0;
         }
 

@@ -41,7 +41,7 @@ fn main() {
         }
 
         if window.is_key_pressed(Key::S, minifb::KeyRepeat::No) {
-            let mut square = object::Object::new_rigid();
+            let square = object::Object::new_rigid();
             //square.y = 0;
             //square.x = 20 + ((square_size+10) * object_list.len()) as i16;
             object_list.push(square);
@@ -79,6 +79,6 @@ fn main() {
         delta_timer = loop_time.elapsed().as_secs_f32();
         drop(loop_time);
 
-        println!("{}", 1.0/delta_timer);
+        //println!("{}", 1.0/delta_timer);
     }
 }
